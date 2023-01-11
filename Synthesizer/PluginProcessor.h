@@ -9,6 +9,8 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "SynthOsc.h"
+#include "SynthSound.h"
 
 //==============================================================================
 /**
@@ -65,6 +67,9 @@ private:
     // Square Wave x < 0.0f ? -1.0f : 1.0f;
 
     juce::dsp::Gain<float> gain;
+
+    // synth
+    juce::Synthesiser synth;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SynthesizerAudioProcessor)

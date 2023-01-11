@@ -22,6 +22,8 @@ SynthesizerAudioProcessor::SynthesizerAudioProcessor()
                        )
 #endif
 {
+    synth.addSound(new SynthSound());
+    synth.addVoice(new SynthOsc());
 }
 
 SynthesizerAudioProcessor::~SynthesizerAudioProcessor()
@@ -103,6 +105,9 @@ void SynthesizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 
     osc.setFrequency(220.0f);
     gain.setGainLinear(0.01f);
+
+    // synth
+    synth.setCurrentPlaybackSampleRate(sampleRate);
 }
 
 void SynthesizerAudioProcessor::releaseResources()
@@ -150,6 +155,19 @@ void SynthesizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     juce::dsp::AudioBlock<float> audioBlock{ buffer };
     osc.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
     gain.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
+
+    // synth
+    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+    {
+        if (auto voice = dynamic_cast<juce::SynthesiserVoice*>(synth.getVoice(i)))
+        {
+            // Osc controls
+            // ADSR
+            // LFO
+        }
+    }
+
+    synth.renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
     
 }
 
@@ -184,3 +202,5 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new SynthesizerAudioProcessor();
 }
+
+// Value Tree Func
