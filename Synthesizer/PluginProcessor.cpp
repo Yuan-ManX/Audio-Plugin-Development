@@ -95,19 +95,29 @@ void SynthesizerAudioProcessor::changeProgramName (int index, const juce::String
 //==============================================================================
 void SynthesizerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    juce::dsp::ProcessSpec spec;
-    spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = getTotalNumOutputChannels();
-    spec.sampleRate = sampleRate;
+    // juce::dsp::ProcessSpec spec;
+    // spec.maximumBlockSize = samplesPerBlock;
+    // spec.numChannels = getTotalNumOutputChannels();
+    // spec.sampleRate = sampleRate;
 
-    osc.prepare(spec);
-    gain.prepare(spec);
+    // osc.prepare(spec);
+    // gain.prepare(spec);
 
-    osc.setFrequency(220.0f);
-    gain.setGainLinear(0.01f);
+    // osc.setFrequency(220.0f);
+    // gain.setGainLinear(0.01f);
 
     // synth
     synth.setCurrentPlaybackSampleRate(sampleRate);
+
+    for (int i = 0; i < synth.getNumVoices(); i++)
+    {
+        // synth.getVoice(i);
+        if (auto voice = dynamic_cast<SynthOsc*>(synth.getVoice(i)))
+        {
+            voice->prepareToPlay(sampleRate, samplesPerBlock, getTotalNumOutputChannels());
+        }
+    }
+
 }
 
 void SynthesizerAudioProcessor::releaseResources()
@@ -152,9 +162,9 @@ void SynthesizerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    juce::dsp::AudioBlock<float> audioBlock{ buffer };
-    osc.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
-    gain.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
+    // juce::dsp::AudioBlock<float> audioBlock{ buffer };
+    // osc.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
+    // gain.process(juce::dsp::ProcessContextReplacing<float>(audioBlock));
 
     // synth
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
@@ -204,3 +214,31 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 }
 
 // Value Tree Func
+juce::AudioProcessorValueTreeState::ParameterLayout SynthesizerAudioProcessor::createParams()
+{
+    // Combobox: switch oscillator
+    // Attack - float
+    // Decay - float
+    // Sustain - float
+    // Release - float
+
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
+
+    // OSC select
+    params.push_back(std::make_unique<juce::AudioParameterChoice>("OSC", "Oscillator", juce::StringArray{ "Sine", "Saw",
+        "Square" }, 0));
+
+    // ADSR
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("ATTACK", "Attack", juce::NormalisableRange<float> {0.1f,
+        1.0f, }, 0.1f));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("DECAY", "Decay", juce::NormalisableRange<float> {0.1f,
+        1.0f, }, 0.1f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("SUSTAIN", "Sustain", juce::NormalisableRange<float> {0.1f,
+        1.0f, }, 0.1f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>("RELEASE", "Release", juce::NormalisableRange<float> {0.1f,
+        3.0f, }, 0.4f));
+
+    return { params.begin(), params.end() };
+
+}

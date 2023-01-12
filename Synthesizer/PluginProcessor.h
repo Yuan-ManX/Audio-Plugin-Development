@@ -58,18 +58,22 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    juce::AudioProcessorValueTreeState apvts;
+
 private:
 
     // juce::dsp::Oscillator<float> osc{ [](float x) { return std::sin(x); } };
-    juce::dsp::Oscillator<float> osc{ [](float x) { return x / juce::MathConstants<float>::pi; } };
+    // juce::dsp::Oscillator<float> osc{ [](float x) { return x / juce::MathConstants<float>::pi; } };
     // Sine Wave std::sin(x);
     // Saw Wave x / juce::MathConstants<float>::pi;
     // Square Wave x < 0.0f ? -1.0f : 1.0f;
 
-    juce::dsp::Gain<float> gain;
+    // juce::dsp::Gain<float> gain;
 
     // synth
     juce::Synthesiser synth;
+
+    juce::AudioProcessorValueTreeState::ParameterLayout createParams();
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SynthesizerAudioProcessor)
