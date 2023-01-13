@@ -50,6 +50,10 @@
         	       }
     	}
 
+	for (const juce::MidiMessageMetadata metadata : midiMessages)
+            		if (metadata.numBytes == 3)
+                		juce::Logger::writeToLog("TimeStamp:" + juce::String(metadata.getMessage().getTimeStamp()));
+
     	synth.renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
     
     
@@ -87,9 +91,9 @@
 
     	bool isPrepared{ false };
 
-
     	juce::ADSR adsr;
     	juce::ADSR::Parameters adsrParams;
+	juce::AudioBuffer<float> synthBuffer;
 
         };
 
@@ -100,6 +104,7 @@
 8、ADSR
 	juce::ADSR adsr;
 	juce::ADSR::Parameters adsrParams;
+	juce::AudioBuffer<float> synthBuffer;
 
 9、Editor
           class SynthesizerAudioProcessorEditor  : public juce::AudioProcessorEditor
@@ -150,5 +155,35 @@
         	"OSC", oscSelector);
           }
 
+10、Value Tree Func
+
+         juce::AudioProcessorValueTreeState::ParameterLayout SynthesizerAudioProcessor::createParams()
+         {
+    	// Combobox: switch oscillator
+    	// Attack - float
+    	// Decay - float
+    	// Sustain - float
+    	// Release - float
+
+    	std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
+
+    	// OSC select
+    	params.push_back(std::make_unique<juce::AudioParameterChoice>("OSC", "Oscillator", juce::StringArray{ "Sine", "Saw",
+        	"Square" }, 0));
+
+    	// ADSR
+    	params.push_back(std::make_unique<juce::AudioParameterFloat>("ATTACK", "Attack", juce::NormalisableRange<float> {0.1f,
+        	1.0f, }, 0.1f));
+
+    	params.push_back(std::make_unique<juce::AudioParameterFloat>("DECAY", "Decay", juce::NormalisableRange<float> {0.1f,
+        	1.0f, }, 0.1f));
+    	params.push_back(std::make_unique<juce::AudioParameterFloat>("SUSTAIN", "Sustain", juce::NormalisableRange<float> {0.1f,
+    	1.0f, }, 0.1f));
+    	params.push_back(std::make_unique<juce::AudioParameterFloat>("RELEASE", "Release", juce::NormalisableRange<float> {0.1f,
+        	3.0f, }, 0.4f));
+
+    	return { params.begin(), params.end() };
+
+        }
 
 
